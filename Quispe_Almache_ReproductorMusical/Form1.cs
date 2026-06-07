@@ -174,7 +174,8 @@ namespace Quispe_Almache_ReproductorMusical
         {
             if (currentVisualizer != null && visualizationGraphics != null)
             {
-                currentVisualizer.Render(visualizationGraphics, e.AudioData, e.FrequencyData, e.Volume);
+                currentVisualizer.Render(visualizationGraphics, e.AudioData, e.FrequencyData, e.Volume, 
+                    e.BassBand, e.MidBand, e.TrebleBand, e.BeatIntensity);
                 visualizationPanel.CreateGraphics().DrawImage(visualizationBitmap, 0, 0);
             }
         }

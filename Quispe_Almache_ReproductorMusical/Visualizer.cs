@@ -46,7 +46,8 @@ namespace Quispe_Almache_ReproductorMusical
             };
         }
 
-        public abstract void Render(Graphics g, float[] audioData, float[] frequencyData, float volume);
+        public abstract void Render(Graphics g, float[] audioData, float[] frequencyData, float volume, 
+            float[] bassBand, float[] midBand, float[] trebleBand, float beatIntensity);
 
         protected Color GetColorFromPalette(int index)
         {
@@ -85,7 +86,8 @@ namespace Quispe_Almache_ReproductorMusical
             targetHeights = new float[barCount];
         }
 
-        public override void Render(Graphics g, float[] audioData, float[] frequencyData, float volume)
+        public override void Render(Graphics g, float[] audioData, float[] frequencyData, float volume, 
+            float[] bassBand, float[] midBand, float[] trebleBand, float beatIntensity)
         {
             g.SmoothingMode = SmoothingMode.AntiAlias;
             g.Clear(Color.Black);
@@ -93,10 +95,11 @@ namespace Quispe_Almache_ReproductorMusical
             int barWidth = width / barCount;
             int gap = 2;
 
-            // Update target heights based on frequency data
+            // Update target heights based on frequency data with beat reaction
             for (int i = 0; i < barCount && i < frequencyData.Length; i++)
             {
-                targetHeights[i] = frequencyData[i] * height * 0.8f * volume;
+                float beatBoost = beatIntensity > 0.3f ? 1.3f : 1.0f;
+                targetHeights[i] = frequencyData[i] * height * 0.8f * volume * beatBoost;
             }
 
             // Smooth interpolation
@@ -147,7 +150,8 @@ namespace Quispe_Almache_ReproductorMusical
             wavePoints = new List<PointF>();
         }
 
-        public override void Render(Graphics g, float[] audioData, float[] frequencyData, float volume)
+        public override void Render(Graphics g, float[] audioData, float[] frequencyData, float volume, 
+            float[] bassBand, float[] midBand, float[] trebleBand, float beatIntensity)
         {
             g.SmoothingMode = SmoothingMode.AntiAlias;
             g.Clear(Color.Black);
@@ -157,12 +161,13 @@ namespace Quispe_Almache_ReproductorMusical
             int centerY = height / 2;
             int step = width / audioData.Length;
 
-            // Draw waveform
+            // Draw waveform with bass influence
             for (int i = 0; i < audioData.Length; i++)
             {
                 // Clamp audio data to valid range [0, 1]
                 float normalizedData = Math.Max(0, Math.Min(1, audioData[i]));
-                float amplitude = normalizedData * height * 0.4f * volume;
+                float bassInfluence = bassBand.Length > 0 ? bassBand[i % bassBand.Length] : 0;
+                float amplitude = normalizedData * height * 0.4f * volume * (1 + bassInfluence * 0.5f);
                 float x = i * step;
                 float y = centerY - amplitude;
 
@@ -213,22 +218,32 @@ namespace Quispe_Almache_ReproductorMusical
             particles = new List<Particle>();
         }
 
-        public override void Render(Graphics g, float[] audioData, float[] frequencyData, float volume)
+        public override void Render(Graphics g, float[] audioData, float[] frequencyData, float volume, 
+            float[] bassBand, float[] midBand, float[] trebleBand, float beatIntensity)
         {
             g.SmoothingMode = SmoothingMode.AntiAlias;
             g.Clear(Color.Black);
 
-            // Spawn new particles based on audio intensity
+            // Spawn new particles based on audio intensity and beat
             float avgIntensity = frequencyData.Average();
+            float bassEnergy = bassBand.Length > 0 ? bassBand.Average() : 0;
             int particlesToSpawn = (int)(avgIntensity * volume * 10);
+            
+            // Extra particles on beat
+            if (beatIntensity > 0.3f)
+            {
+                particlesToSpawn += (int)(beatIntensity * 20);
+            }
 
             for (int i = 0; i < particlesToSpawn && particles.Count < maxParticles; i++)
             {
+                float intensity = frequencyData[i % frequencyData.Length] * volume;
                 particles.Add(new Particle(
                     width / 2,
                     height / 2,
                     random,
-                    frequencyData[i % frequencyData.Length] * volume
+                    intensity,
+                    bassEnergy
                 ));
             }
 
@@ -244,8 +259,12 @@ namespace Quispe_Almache_ReproductorMusical
                 }
             }
 
-            // Draw center pulse
+            // Draw center pulse with beat reaction
             float pulseRadius = 50 + avgIntensity * volume * 100;
+            if (beatIntensity > 0.3f)
+            {
+                pulseRadius *= 1.5f; // Pulse expands on beat
+            }
             int pulseAlpha = Math.Max(0, Math.Min(255, (int)(avgIntensity * 100)));
             using (Brush pulseBrush = new SolidBrush(Color.FromArgb(pulseAlpha, 255, 100, 100)))
             {
@@ -268,14 +287,14 @@ namespace Quispe_Almache_ReproductorMusical
         private Color color;
         private Random random;
 
-        public Particle(float startX, float startY, Random random, float intensity)
+        public Particle(float startX, float startY, Random random, float intensity, float bassEnergy)
         {
             this.random = random;
             this.x = startX;
             this.y = startY;
             
             float angle = random.NextFloat(0, (float)Math.PI * 2);
-            float speed = random.NextFloat(2, 8) * intensity;
+            float speed = random.NextFloat(2, 8) * intensity * (1 + bassEnergy * 0.5f);
             this.vx = (float)Math.Cos(angle) * speed;
             this.vy = (float)Math.Sin(angle) * speed;
             
@@ -346,19 +365,36 @@ namespace Quispe_Almache_ReproductorMusical
             shapes.Add(new GeometricShape(8, 140, Color.Orange)); // Octagon
         }
 
-        public override void Render(Graphics g, float[] audioData, float[] frequencyData, float volume)
+        public override void Render(Graphics g, float[] audioData, float[] frequencyData, float volume, 
+            float[] bassBand, float[] midBand, float[] trebleBand, float beatIntensity)
         {
             g.SmoothingMode = SmoothingMode.AntiAlias;
             g.Clear(Color.Black);
 
+            float bassEnergy = bassBand.Length > 0 ? bassBand.Average() : 0;
+            float midEnergy = midBand.Length > 0 ? midBand.Average() : 0;
+            float trebleEnergy = trebleBand.Length > 0 ? trebleBand.Average() : 0;
+            
             rotation += 0.02f + frequencyData[0] * 0.1f * volume;
+            
+            // React to beat
+            if (beatIntensity > 0.3f)
+            {
+                rotation += 0.1f; // Extra rotation on beat
+            }
 
             float avgIntensity = frequencyData.Average() * volume;
 
-            // Draw shapes
+            // Draw shapes with frequency band influence
             for (int i = 0; i < shapes.Count; i++)
             {
                 float scale = 1 + avgIntensity * 2;
+                
+                // Different shapes react to different frequency bands
+                if (i == 0) scale *= (1 + bassEnergy * 0.5f); // Bass affects first shape
+                else if (i == 1) scale *= (1 + midEnergy * 0.5f); // Mid affects second shape
+                else scale *= (1 + trebleEnergy * 0.5f); // Treble affects others
+                
                 shapes[i].Draw(g, width / 2, height / 2, rotation + i * 0.5f, scale, avgIntensity);
             }
 
@@ -446,7 +482,8 @@ namespace Quispe_Almache_ReproductorMusical
             targetHeights = new float[barCount];
         }
 
-        public override void Render(Graphics g, float[] audioData, float[] frequencyData, float volume)
+        public override void Render(Graphics g, float[] audioData, float[] frequencyData, float volume, 
+            float[] bassBand, float[] midBand, float[] trebleBand, float beatIntensity)
         {
             g.SmoothingMode = SmoothingMode.AntiAlias;
             g.Clear(Color.Black);
@@ -455,10 +492,11 @@ namespace Quispe_Almache_ReproductorMusical
             float centerY = height / 2;
             float baseRadius = Math.Min(width, height) * 0.25f;
 
-            // Update target heights
+            // Update target heights with beat reaction
             for (int i = 0; i < barCount && i < frequencyData.Length; i++)
             {
-                targetHeights[i] = frequencyData[i] * baseRadius * volume;
+                float beatBoost = beatIntensity > 0.3f ? 1.4f : 1.0f;
+                targetHeights[i] = frequencyData[i] * baseRadius * volume * beatBoost;
             }
 
             // Smooth interpolation
@@ -485,9 +523,13 @@ namespace Quispe_Almache_ReproductorMusical
                 }
             }
 
-            // Draw center circle
+            // Draw center circle with beat reaction
             float avgIntensity = frequencyData.Average() * volume;
             float centerRadius = baseRadius * 0.8f + avgIntensity * 20;
+            if (beatIntensity > 0.3f)
+            {
+                centerRadius *= 1.3f; // Pulse on beat
+            }
             int centerAlpha = Math.Max(0, Math.Min(255, (int)(avgIntensity * 150)));
             using (Brush centerBrush = new SolidBrush(Color.FromArgb(centerAlpha, 0, 150, 255)))
             {

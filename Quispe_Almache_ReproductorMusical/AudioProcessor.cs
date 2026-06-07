@@ -27,6 +27,13 @@ namespace Quispe_Almache_ReproductorMusical
         private int fftSize = 512;
         private Random random;
         private string alias = "myAudio";
+        private DateTime playbackStartTime;
+        private int frameCount;
+        private float[] bassBand;
+        private float[] midBand;
+        private float[] trebleBand;
+        private float beatIntensity;
+        private float previousBeatIntensity;
 
         public event EventHandler<AudioDataEventArgs> AudioDataUpdated;
 
@@ -36,7 +43,13 @@ namespace Quispe_Almache_ReproductorMusical
             isPaused = false;
             audioData = new float[fftSize];
             frequencyData = new float[fftSize / 2];
+            bassBand = new float[32];
+            midBand = new float[64];
+            trebleBand = new float[128];
             random = new Random();
+            frameCount = 0;
+            beatIntensity = 0;
+            previousBeatIntensity = 0;
         }
 
         public void LoadFile(string filePath)
@@ -78,6 +91,8 @@ namespace Quispe_Almache_ReproductorMusical
                     {
                         isPlaying = true;
                         isPaused = false;
+                        playbackStartTime = DateTime.Now;
+                        frameCount = 0;
                     }
                     else
                     {
@@ -153,24 +168,58 @@ namespace Quispe_Almache_ReproductorMusical
         public bool IsPaused => isPaused;
         public string CurrentFile => currentFile;
 
-        // Simulate audio data analysis (since SoundPlayer doesn't provide real-time data)
+        // Simulate audio data analysis with improved synchronization
         public void UpdateAnalysis()
         {
             if (isPlaying)
             {
-                Random random = new Random();
+                frameCount++;
+                double timeSinceStart = (DateTime.Now - playbackStartTime).TotalSeconds;
                 
-                // Generate simulated audio data based on volume
+                // Simulate realistic audio patterns based on time
+                double beatPattern = Math.Sin(timeSinceStart * 8) * 0.5 + 0.5; // ~120 BPM
+                double bassPattern = Math.Sin(timeSinceStart * 4) * 0.7 + 0.3;
+                double midPattern = Math.Sin(timeSinceStart * 12) * 0.4 + 0.6;
+                double treblePattern = Math.Sin(timeSinceStart * 16) * 0.3 + 0.7;
+                
+                // Detect beat (sudden increase in energy)
+                float currentBeatEnergy = (float)bassPattern * volume;
+                beatIntensity = currentBeatEnergy - previousBeatIntensity;
+                previousBeatIntensity = currentBeatEnergy;
+                
+                // Generate audio data with frequency band separation
                 for (int i = 0; i < fftSize; i++)
                 {
-                    audioData[i] = (float)(random.NextDouble() * volume);
+                    float sample = 0;
+                    
+                    // Bass frequencies (low indices)
+                    if (i < fftSize / 8)
+                    {
+                        sample = (float)(bassPattern * volume * (1 + random.NextDouble() * 0.3));
+                        bassBand[i % bassBand.Length] = sample;
+                    }
+                    // Mid frequencies
+                    else if (i < fftSize / 2)
+                    {
+                        sample = (float)(midPattern * volume * (1 + random.NextDouble() * 0.2));
+                        midBand[(i - fftSize / 8) % midBand.Length] = sample;
+                    }
+                    // Treble frequencies (high indices)
+                    else
+                    {
+                        sample = (float)(treblePattern * volume * (1 + random.NextDouble() * 0.1));
+                        trebleBand[(i - fftSize / 2) % trebleBand.Length] = sample;
+                    }
+                    
+                    audioData[i] = Math.Max(0, Math.Min(1, sample));
                 }
 
                 // Perform FFT to get frequency data
                 PerformFFT(audioData, frequencyData);
 
-                // Raise event with updated data
-                AudioDataUpdated?.Invoke(this, new AudioDataEventArgs(audioData, frequencyData, volume));
+                // Raise event with updated data including frequency bands
+                AudioDataUpdated?.Invoke(this, new AudioDataEventArgs(audioData, frequencyData, volume, 
+                    bassBand, midBand, trebleBand, beatIntensity));
             }
         }
 
@@ -249,12 +298,32 @@ namespace Quispe_Almache_ReproductorMusical
         public float[] AudioData { get; }
         public float[] FrequencyData { get; }
         public float Volume { get; }
+        public float[] BassBand { get; }
+        public float[] MidBand { get; }
+        public float[] TrebleBand { get; }
+        public float BeatIntensity { get; }
 
         public AudioDataEventArgs(float[] audioData, float[] frequencyData, float volume)
         {
             AudioData = audioData;
             FrequencyData = frequencyData;
             Volume = volume;
+            BassBand = new float[0];
+            MidBand = new float[0];
+            TrebleBand = new float[0];
+            BeatIntensity = 0;
+        }
+
+        public AudioDataEventArgs(float[] audioData, float[] frequencyData, float volume, 
+            float[] bassBand, float[] midBand, float[] trebleBand, float beatIntensity)
+        {
+            AudioData = audioData;
+            FrequencyData = frequencyData;
+            Volume = volume;
+            BassBand = bassBand;
+            MidBand = midBand;
+            TrebleBand = trebleBand;
+            BeatIntensity = beatIntensity;
         }
     }
 }
