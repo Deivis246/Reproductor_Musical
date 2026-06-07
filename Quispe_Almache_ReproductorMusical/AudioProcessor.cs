@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Media;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Windows.Forms;
 
 namespace Quispe_Almache_ReproductorMusical
@@ -15,7 +15,9 @@ namespace Quispe_Almache_ReproductorMusical
         [DllImport("winmm.dll")]
         private static extern int waveOutSetVolume(IntPtr hwo, uint dwVolume);
 
-        private SoundPlayer player;
+        [DllImport("winmm.dll", CharSet = CharSet.Auto)]
+        private static extern int mciSendString(string command, StringBuilder buffer, int bufferSize, IntPtr hwndCallback);
+
         private string currentFile;
         private bool isPlaying;
         private bool isPaused;
@@ -23,28 +25,41 @@ namespace Quispe_Almache_ReproductorMusical
         private float[] audioData;
         private float[] frequencyData;
         private int fftSize = 512;
+        private Random random;
+        private string alias = "myAudio";
 
         public event EventHandler<AudioDataEventArgs> AudioDataUpdated;
 
         public AudioProcessor()
         {
-            player = new SoundPlayer();
             isPlaying = false;
             isPaused = false;
             audioData = new float[fftSize];
             frequencyData = new float[fftSize / 2];
+            random = new Random();
         }
 
         public void LoadFile(string filePath)
         {
             try
             {
-                player.Stop();
-                player.SoundLocation = filePath;
-                player.Load();
-                currentFile = filePath;
-                isPlaying = false;
-                isPaused = false;
+                // Close any existing audio
+                mciSendString($"close {alias}", null, 0, IntPtr.Zero);
+
+                // Open the new file
+                string command = $"open \"{filePath}\" type mpegvideo alias {alias}";
+                int result = mciSendString(command, null, 0, IntPtr.Zero);
+
+                if (result == 0)
+                {
+                    currentFile = filePath;
+                    isPlaying = false;
+                    isPaused = false;
+                }
+                else
+                {
+                    MessageBox.Show($"Error loading file: Could not open audio file. Error code: {result}");
+                }
             }
             catch (Exception ex)
             {
@@ -58,12 +73,16 @@ namespace Quispe_Almache_ReproductorMusical
             {
                 try
                 {
-                    if (isPaused)
+                    int result = mciSendString($"play {alias}", null, 0, IntPtr.Zero);
+                    if (result == 0)
                     {
+                        isPlaying = true;
                         isPaused = false;
                     }
-                    player.Play();
-                    isPlaying = true;
+                    else
+                    {
+                        MessageBox.Show($"Error playing: Error code: {result}");
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -76,17 +95,42 @@ namespace Quispe_Almache_ReproductorMusical
         {
             if (isPlaying)
             {
-                player.Stop();
-                isPaused = true;
-                isPlaying = false;
+                try
+                {
+                    int result = mciSendString($"pause {alias}", null, 0, IntPtr.Zero);
+                    if (result == 0)
+                    {
+                        isPaused = true;
+                        isPlaying = false;
+                    }
+                    else
+                    {
+                        MessageBox.Show($"Error pausing: Error code: {result}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error pausing: {ex.Message}");
+                }
             }
         }
 
         public void Stop()
         {
-            player.Stop();
-            isPlaying = false;
-            isPaused = false;
+            try
+            {
+                int result = mciSendString($"stop {alias}", null, 0, IntPtr.Zero);
+                if (result == 0)
+                {
+                    mciSendString($"seek {alias} to start", null, 0, IntPtr.Zero);
+                    isPlaying = false;
+                    isPaused = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error stopping: {ex.Message}");
+            }
         }
 
         public void SetVolume(float vol)
@@ -94,6 +138,10 @@ namespace Quispe_Almache_ReproductorMusical
             volume = Math.Max(0, Math.Min(1, vol));
             uint newVolume = (uint)(volume * 0xFFFF);
             waveOutSetVolume(IntPtr.Zero, newVolume | (newVolume << 16));
+            
+            // Also set MCI volume
+            int mciVolume = (int)(volume * 1000);
+            mciSendString($"setaudio {alias} volume to {mciVolume}", null, 0, IntPtr.Zero);
         }
 
         public float GetVolume()
