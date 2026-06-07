@@ -169,6 +169,26 @@ namespace Quispe_Almache_ReproductorMusical
                 // Perform FFT to get frequency data
                 PerformFFT(audioData, frequencyData);
 
+                // Normalize frequency data to [0, 1] range
+                float maxFreq = frequencyData.Max();
+                if (maxFreq > 0)
+                {
+                    for (int i = 0; i < frequencyData.Length; i++)
+                    {
+                        frequencyData[i] = frequencyData[i] / maxFreq;
+                    }
+                }
+
+                // Normalize audio data to [0, 1] range
+                float maxAudio = audioData.Max();
+                if (maxAudio > 0)
+                {
+                    for (int i = 0; i < audioData.Length; i++)
+                    {
+                        audioData[i] = audioData[i] / maxAudio;
+                    }
+                }
+
                 // Raise event with updated data
                 AudioDataUpdated?.Invoke(this, new AudioDataEventArgs(audioData, frequencyData, volume));
             }
