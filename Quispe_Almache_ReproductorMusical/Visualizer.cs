@@ -160,7 +160,9 @@ namespace Quispe_Almache_ReproductorMusical
             // Draw waveform
             for (int i = 0; i < audioData.Length; i++)
             {
-                float amplitude = audioData[i] * height * 0.4f * volume;
+                // Clamp audio data to valid range [0, 1]
+                float normalizedData = Math.Max(0, Math.Min(1, audioData[i]));
+                float amplitude = normalizedData * height * 0.4f * volume;
                 float x = i * step;
                 float y = centerY - amplitude;
 
@@ -305,12 +307,11 @@ namespace Quispe_Almache_ReproductorMusical
 
         public void Draw(Graphics g)
         {
-            float alpha = life;
-            Color drawColor = Color.FromArgb(
-                (int)(alpha * color.R),
-                (int)(alpha * color.G),
-                (int)(alpha * color.B)
-            );
+            float alpha = Math.Max(0, Math.Min(1, life));
+            int r = Math.Max(0, Math.Min(255, (int)(alpha * color.R)));
+            int green = Math.Max(0, Math.Min(255, (int)(alpha * color.G)));
+            int b = Math.Max(0, Math.Min(255, (int)(alpha * color.B)));
+            Color drawColor = Color.FromArgb(r, green, b);
 
             using (Brush brush = new SolidBrush(drawColor))
             {
@@ -411,11 +412,13 @@ namespace Quispe_Almache_ReproductorMusical
                 );
             }
 
-            Color drawColor = Color.FromArgb(
-                (int)(color.R * (0.5 + intensity * 0.5)),
-                (int)(color.G * (0.5 + intensity * 0.5)),
-                (int)(color.B * (0.5 + intensity * 0.5))
-            );
+            // Clamp intensity to valid range
+            intensity = Math.Max(0, Math.Min(1, intensity));
+            
+            int r = Math.Max(0, Math.Min(255, (int)(color.R * (0.5 + intensity * 0.5))));
+            int green = Math.Max(0, Math.Min(255, (int)(color.G * (0.5 + intensity * 0.5))));
+            int b = Math.Max(0, Math.Min(255, (int)(color.B * (0.5 + intensity * 0.5))));
+            Color drawColor = Color.FromArgb(r, green, b);
 
             using (Pen pen = new Pen(drawColor, 3))
             {
