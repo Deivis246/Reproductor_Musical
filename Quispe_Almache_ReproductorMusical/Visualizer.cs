@@ -332,9 +332,12 @@ namespace Quispe_Almache_ReproductorMusical
             int b = Math.Max(0, Math.Min(255, (int)(alpha * color.B)));
             Color drawColor = Color.FromArgb(r, green, b);
 
+            // Ensure size is at least 1 to avoid zero-size rectangles
+            float drawSize = Math.Max(1, size);
+            
             using (Brush brush = new SolidBrush(drawColor))
             {
-                g.FillEllipse(brush, x - size / 2, y - size / 2, size, size);
+                g.FillEllipse(brush, x - drawSize / 2, y - drawSize / 2, drawSize, drawSize);
             }
         }
 
