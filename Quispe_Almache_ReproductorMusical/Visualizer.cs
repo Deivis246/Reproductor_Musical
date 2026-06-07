@@ -55,10 +55,13 @@ namespace Quispe_Almache_ReproductorMusical
 
         protected Color GetColorByIntensity(float intensity)
         {
+            // Clamp intensity to valid range [0, 1]
+            intensity = Math.Max(0, Math.Min(1, intensity));
+            
             int r = (int)(intensity * 255);
             int g = (int)((1 - intensity) * 150);
             int b = (int)(intensity * 200 + 55);
-            return Color.FromArgb(Math.Min(255, r), Math.Min(255, g), Math.Min(255, b));
+            return Color.FromArgb(Math.Max(0, Math.Min(255, r)), Math.Max(0, Math.Min(255, g)), Math.Max(0, Math.Min(255, b)));
         }
 
         public void SetSize(int width, int height)
