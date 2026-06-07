@@ -190,7 +190,8 @@ namespace Quispe_Almache_ReproductorMusical
                 for (int i = 0; i < wavePoints.Count; i++)
                 {
                     float intensity = audioData[i % audioData.Length];
-                    Color glowColor = Color.FromArgb((int)(intensity * 100), 0, 255, 200);
+                    int alpha = Math.Max(0, Math.Min(255, (int)(intensity * 100)));
+                    Color glowColor = Color.FromArgb(alpha, 0, 255, 200);
                     using (Brush brush = new SolidBrush(glowColor))
                     {
                         g.FillEllipse(brush, wavePoints[i].X - 3, wavePoints[i].Y - 3, 6, 6);
@@ -243,7 +244,8 @@ namespace Quispe_Almache_ReproductorMusical
 
             // Draw center pulse
             float pulseRadius = 50 + avgIntensity * volume * 100;
-            using (Brush pulseBrush = new SolidBrush(Color.FromArgb((int)(avgIntensity * 100), 255, 100, 100)))
+            int pulseAlpha = Math.Max(0, Math.Min(255, (int)(avgIntensity * 100)));
+            using (Brush pulseBrush = new SolidBrush(Color.FromArgb(pulseAlpha, 255, 100, 100)))
             {
                 g.FillEllipse(pulseBrush, 
                     width / 2 - pulseRadius / 2, 
@@ -420,7 +422,8 @@ namespace Quispe_Almache_ReproductorMusical
                 g.DrawPolygon(pen, points);
             }
 
-            using (Brush brush = new SolidBrush(Color.FromArgb((int)(intensity * 100), drawColor)))
+            int fillAlpha = Math.Max(0, Math.Min(255, (int)(intensity * 100)));
+            using (Brush brush = new SolidBrush(Color.FromArgb(fillAlpha, drawColor)))
             {
                 g.FillPolygon(brush, points);
             }
@@ -482,7 +485,8 @@ namespace Quispe_Almache_ReproductorMusical
             // Draw center circle
             float avgIntensity = frequencyData.Average() * volume;
             float centerRadius = baseRadius * 0.8f + avgIntensity * 20;
-            using (Brush centerBrush = new SolidBrush(Color.FromArgb((int)(avgIntensity * 150), 0, 150, 255)))
+            int centerAlpha = Math.Max(0, Math.Min(255, (int)(avgIntensity * 150)));
+            using (Brush centerBrush = new SolidBrush(Color.FromArgb(centerAlpha, 0, 150, 255)))
             {
                 g.FillEllipse(centerBrush, 
                     centerX - centerRadius, 
