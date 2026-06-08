@@ -1,6 +1,6 @@
-﻿namespace Quispe_Almache_ReproductorMusical
+namespace Quispe_Almache_ReproductorMusical.Views
 {
-    partial class Form1
+    partial class FrmReproductor
     {
         /// <summary>
         /// Variable del diseñador necesaria.

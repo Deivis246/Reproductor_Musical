@@ -5,9 +5,9 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 
-namespace Quispe_Almache_ReproductorMusical
+namespace Quispe_Almache_ReproductorMusical.Models
 {
-    public class AudioProcessor
+    public class ReproductorModel
     {
         [DllImport("winmm.dll")]
         private static extern int waveOutGetVolume(IntPtr hwo, out uint dwVolume);
@@ -37,7 +37,7 @@ namespace Quispe_Almache_ReproductorMusical
 
         public event EventHandler<AudioDataEventArgs> AudioDataUpdated;
 
-        public AudioProcessor()
+        public ReproductorModel()
         {
             isPlaying = false;
             isPaused = false;

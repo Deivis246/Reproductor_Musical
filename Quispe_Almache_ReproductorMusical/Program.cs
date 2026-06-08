@@ -1,8 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Quispe_Almache_ReproductorMusical.Controllers;
+using Quispe_Almache_ReproductorMusical.Models;
+using Quispe_Almache_ReproductorMusical.Views;
 
 namespace Quispe_Almache_ReproductorMusical
 {
@@ -16,7 +19,12 @@ namespace Quispe_Almache_ReproductorMusical
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+            
+            ReproductorModel model = new ReproductorModel();
+            FrmReproductor view = new FrmReproductor();
+            ReproductorController controller = new ReproductorController(model, view);
+            
+            controller.Run();
         }
     }
 }

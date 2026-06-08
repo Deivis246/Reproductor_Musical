@@ -112,28 +112,29 @@ namespace Quispe_Almache_ReproductorMusical
             for (int i = 0; i < barCount; i++)
             {
                 int x = i * barWidth;
-                int barHeight = (int)barHeights[i];
+                int barHeight = Math.Max(1, (int)barHeights[i]); // Asegurar altura mínima de 1
                 int y = height - barHeight;
+                int actualWidth = Math.Max(1, barWidth - gap); // Asegurar ancho mínimo de 1
 
                 Color barColor = GetColorByIntensity(barHeights[i] / height);
                 using (LinearGradientBrush brush = new LinearGradientBrush(
-                    new Rectangle(x, y, barWidth - gap, barHeight),
+                    new Rectangle(x, y, actualWidth, barHeight),
                     barColor,
                     Color.FromArgb(barColor.R / 2, barColor.G / 2, barColor.B / 2),
                     LinearGradientMode.Vertical))
                 {
-                    g.FillRectangle(brush, x, y, barWidth - gap, barHeight);
+                    g.FillRectangle(brush, x, y, actualWidth, barHeight);
                 }
 
                 // Add reflection effect
-                int reflectionHeight = barHeight / 3;
+                int reflectionHeight = Math.Max(1, barHeight / 3); // Asegurar altura mínima de 1
                 using (LinearGradientBrush reflectionBrush = new LinearGradientBrush(
-                    new Rectangle(x, height, barWidth - gap, reflectionHeight),
+                    new Rectangle(x, height, actualWidth, reflectionHeight),
                     Color.FromArgb(50, barColor),
                     Color.Transparent,
                     LinearGradientMode.Vertical))
                 {
-                    g.FillRectangle(reflectionBrush, x, height, barWidth - gap, reflectionHeight);
+                    g.FillRectangle(reflectionBrush, x, height, actualWidth, reflectionHeight);
                 }
             }
         }
@@ -159,7 +160,7 @@ namespace Quispe_Almache_ReproductorMusical
             wavePoints.Clear();
 
             int centerY = height / 2;
-            int step = width / audioData.Length;
+            float step = (float)width / (audioData.Length > 1 ? audioData.Length - 1 : 1);
 
             // Draw waveform with bass influence
             for (int i = 0; i < audioData.Length; i++)
@@ -211,7 +212,7 @@ namespace Quispe_Almache_ReproductorMusical
     public class ParticleVisualizer : Visualizer
     {
         private List<Particle> particles;
-        private int maxParticles = 200;
+        private int maxParticles = 1000;
 
         public ParticleVisualizer(int width, int height) : base(width, height)
         {
@@ -224,30 +225,10 @@ namespace Quispe_Almache_ReproductorMusical
             g.SmoothingMode = SmoothingMode.AntiAlias;
             g.Clear(Color.Black);
 
-            // Spawn new particles based on audio intensity and beat
             float avgIntensity = frequencyData.Average();
             float bassEnergy = bassBand.Length > 0 ? bassBand.Average() : 0;
-            int particlesToSpawn = (int)(avgIntensity * volume * 10);
-            
-            // Extra particles on beat
-            if (beatIntensity > 0.3f)
-            {
-                particlesToSpawn += (int)(beatIntensity * 20);
-            }
 
-            for (int i = 0; i < particlesToSpawn && particles.Count < maxParticles; i++)
-            {
-                float intensity = frequencyData[i % frequencyData.Length] * volume;
-                particles.Add(new Particle(
-                    width / 2,
-                    height / 2,
-                    random,
-                    intensity,
-                    bassEnergy
-                ));
-            }
-
-            // Update and draw particles
+            // Update and draw particles first
             for (int i = particles.Count - 1; i >= 0; i--)
             {
                 particles[i].Update(width, height, frequencyData, volume);
@@ -259,14 +240,37 @@ namespace Quispe_Almache_ReproductorMusical
                 }
             }
 
-            // Draw center pulse with beat reaction
-            float pulseRadius = 50 + avgIntensity * volume * 100;
+            // Spawn a shockwave ring ONLY on strong beats
             if (beatIntensity > 0.3f)
             {
-                pulseRadius *= 1.5f; // Pulse expands on beat
+                int particlesInRing = 36; // 36 particles form a circle
+                float angleStep = (float)(Math.PI * 2) / particlesInRing;
+                
+                // Color based on bass energy
+                Color ringColor = Color.FromArgb(
+                    Math.Max(50, Math.Min(255, (int)(bassEnergy * 300))),
+                    Math.Max(50, Math.Min(255, (int)((1 - bassEnergy) * 150))),
+                    200
+                );
+
+                for (int i = 0; i < particlesInRing; i++)
+                {
+                    if (particles.Count < maxParticles)
+                    {
+                        float angle = i * angleStep;
+                        particles.Add(new Particle(width / 2, height / 2, angle, beatIntensity * volume * 20, ringColor));
+                    }
+                }
             }
-            int pulseAlpha = Math.Max(0, Math.Min(255, (int)(avgIntensity * 100)));
-            using (Brush pulseBrush = new SolidBrush(Color.FromArgb(pulseAlpha, 255, 100, 100)))
+
+            // Draw Central Core that reacts to average intensity
+            float pulseRadius = 40 + avgIntensity * volume * 150;
+            if (beatIntensity > 0.3f)
+            {
+                pulseRadius *= 1.3f; // Expands heavily on beat
+            }
+            int pulseAlpha = Math.Max(0, Math.Min(255, (int)(avgIntensity * 200) + 50));
+            using (Brush pulseBrush = new SolidBrush(Color.FromArgb(pulseAlpha, 0, 150, 255)))
             {
                 g.FillEllipse(pulseBrush, 
                     width / 2 - pulseRadius / 2, 
@@ -282,46 +286,27 @@ namespace Quispe_Almache_ReproductorMusical
         private float x, y;
         private float vx, vy;
         private float life;
-        private float maxLife;
         private float size;
         private Color color;
-        private Random random;
 
-        public Particle(float startX, float startY, Random random, float intensity, float bassEnergy)
+        public Particle(float startX, float startY, float angle, float speed, Color color)
         {
-            this.random = random;
             this.x = startX;
             this.y = startY;
-            
-            float angle = random.NextFloat(0, (float)Math.PI * 2);
-            float speed = random.NextFloat(2, 8) * intensity * (1 + bassEnergy * 0.5f);
             this.vx = (float)Math.Cos(angle) * speed;
             this.vy = (float)Math.Sin(angle) * speed;
             
             this.life = 1.0f;
-            this.maxLife = random.NextFloat(0.5f, 2.0f);
-            this.size = random.NextFloat(2, 8);
-            
-            this.color = Color.FromArgb(
-                random.Next(100, 255),
-                random.Next(100, 255),
-                random.Next(100, 255)
-            );
+            this.size = 6f; // Initial size of the wave particle
+            this.color = color;
         }
 
         public void Update(int width, int height, float[] frequencyData, float volume)
         {
             x += vx;
             y += vy;
-            life -= 0.02f;
-
-            // React to bass frequencies
-            if (frequencyData.Length > 0)
-            {
-                float bass = frequencyData[0] * volume;
-                vx *= (1 + bass * 0.1f);
-                vy *= (1 + bass * 0.1f);
-            }
+            life -= 0.03f; // Fade out over time
+            size += 0.2f; // Particles get slightly bigger as they expand
         }
 
         public void Draw(Graphics g)
@@ -332,12 +317,17 @@ namespace Quispe_Almache_ReproductorMusical
             int b = Math.Max(0, Math.Min(255, (int)(alpha * color.B)));
             Color drawColor = Color.FromArgb(r, green, b);
 
-            // Ensure size is at least 1 to avoid zero-size rectangles
             float drawSize = Math.Max(1, size);
             
             using (Brush brush = new SolidBrush(drawColor))
             {
                 g.FillEllipse(brush, x - drawSize / 2, y - drawSize / 2, drawSize, drawSize);
+            }
+            
+            // Add a glow trail line pointing towards center
+            using (Pen pen = new Pen(Color.FromArgb((int)(alpha * 100), color), 2))
+            {
+                g.DrawLine(pen, x, y, x - vx * 2, y - vy * 2);
             }
         }
 
@@ -361,11 +351,9 @@ namespace Quispe_Almache_ReproductorMusical
 
         private void InitializeShapes()
         {
-            shapes.Add(new GeometricShape(3, 100, Color.Red)); // Triangle
-            shapes.Add(new GeometricShape(4, 150, Color.Blue)); // Square
-            shapes.Add(new GeometricShape(5, 120, Color.Green)); // Pentagon
-            shapes.Add(new GeometricShape(6, 180, Color.Purple)); // Hexagon
-            shapes.Add(new GeometricShape(8, 140, Color.Orange)); // Octagon
+            shapes.Add(new GeometricShape(3, 80, Color.Red));    // Triangle (Bass)
+            shapes.Add(new GeometricShape(6, 100, Color.Green)); // Hexagon (Mid)
+            shapes.Add(new GeometricShape(8, 80, Color.Blue));   // Octagon (Treble)
         }
 
         public override void Render(Graphics g, float[] audioData, float[] frequencyData, float volume, 
@@ -386,40 +374,27 @@ namespace Quispe_Almache_ReproductorMusical
                 rotation += 0.1f; // Extra rotation on beat
             }
 
-            float avgIntensity = frequencyData.Average() * volume;
-
-            // Draw shapes with frequency band influence
-            for (int i = 0; i < shapes.Count; i++)
+            // Draw 3 shapes distributed horizontally (Bass, Mid, Treble)
+            if (shapes.Count >= 3)
             {
-                float scale = 1 + avgIntensity * 2;
-                
-                // Different shapes react to different frequency bands
-                if (i == 0) scale *= (1 + bassEnergy * 0.5f); // Bass affects first shape
-                else if (i == 1) scale *= (1 + midEnergy * 0.5f); // Mid affects second shape
-                else scale *= (1 + trebleEnergy * 0.5f); // Treble affects others
-                
-                shapes[i].Draw(g, width / 2, height / 2, rotation + i * 0.5f, scale, avgIntensity);
+                // Bass shape (Left)
+                float scale1 = 1 + bassEnergy * 3;
+                shapes[0].Draw(g, width * 0.25f, height / 2, rotation, scale1, bassEnergy);
+
+                // Mid shape (Center)
+                float scale2 = 1 + midEnergy * 3;
+                shapes[1].Draw(g, width * 0.5f, height / 2, -rotation, scale2, midEnergy);
+
+                // Treble shape (Right)
+                float scale3 = 1 + trebleEnergy * 3;
+                shapes[2].Draw(g, width * 0.75f, height / 2, rotation * 1.5f, scale3, trebleEnergy);
             }
 
-            // Draw connecting lines
-            using (Pen linePen = new Pen(Color.FromArgb(100, 255, 255), 1))
+            // Draw connecting lines between the centers
+            using (Pen linePen = new Pen(Color.FromArgb(100, 255, 255), 2))
             {
-                for (int i = 0; i < shapes.Count - 1; i++)
-                {
-                    float angle1 = rotation + i * 0.5f;
-                    float angle2 = rotation + (i + 1) * 0.5f;
-                    
-                    PointF p1 = new PointF(
-                        width / 2 + (float)Math.Cos(angle1) * 200,
-                        height / 2 + (float)Math.Sin(angle1) * 200
-                    );
-                    PointF p2 = new PointF(
-                        width / 2 + (float)Math.Cos(angle2) * 200,
-                        height / 2 + (float)Math.Sin(angle2) * 200
-                    );
-                    
-                    g.DrawLine(linePen, p1, p2);
-                }
+                g.DrawLine(linePen, width * 0.25f, height / 2, width * 0.5f, height / 2);
+                g.DrawLine(linePen, width * 0.5f, height / 2, width * 0.75f, height / 2);
             }
         }
     }

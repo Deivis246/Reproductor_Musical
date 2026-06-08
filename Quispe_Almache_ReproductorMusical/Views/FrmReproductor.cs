@@ -1,18 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
+using System;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using Quispe_Almache_ReproductorMusical.Models;
+using Quispe_Almache_ReproductorMusical;
 
-namespace Quispe_Almache_ReproductorMusical
+namespace Quispe_Almache_ReproductorMusical.Views
 {
-    public partial class Form1 : Form
+    public partial class FrmReproductor : Form
     {
-        private AudioProcessor audioProcessor;
         private Visualizer currentVisualizer;
         private Timer animationTimer;
         private Bitmap visualizationBitmap;
@@ -20,7 +15,15 @@ namespace Quispe_Almache_ReproductorMusical
         private DateTime playbackStartTime;
         private TimeSpan totalDuration;
 
-        public Form1()
+        public event EventHandler<string> LoadFileRequested;
+        public event EventHandler PlayRequested;
+        public event EventHandler PauseRequested;
+        public event EventHandler StopRequested;
+        public event EventHandler<float> VolumeChanged;
+        public event EventHandler TimerTicked;
+        public event EventHandler<FormClosingEventArgs> FormClosingRequested;
+
+        public FrmReproductor()
         {
             InitializeComponent();
             InitializeComponents();
@@ -28,9 +31,6 @@ namespace Quispe_Almache_ReproductorMusical
 
         private void InitializeComponents()
         {
-            audioProcessor = new AudioProcessor();
-            audioProcessor.AudioDataUpdated += AudioProcessor_AudioDataUpdated;
-
             currentVisualizer = new SpectrumBarsVisualizer(visualizationPanel.Width, visualizationPanel.Height);
 
             visualizationBitmap = new Bitmap(visualizationPanel.Width, visualizationPanel.Height);
@@ -51,7 +51,7 @@ namespace Quispe_Almache_ReproductorMusical
 
         private void Form1_Resize(object sender, EventArgs e)
         {
-            if (visualizationBitmap != null)
+            if (visualizationBitmap != null && visualizationPanel.Width > 0 && visualizationPanel.Height > 0)
             {
                 visualizationBitmap.Dispose();
                 visualizationBitmap = new Bitmap(visualizationPanel.Width, visualizationPanel.Height);
@@ -73,55 +73,45 @@ namespace Quispe_Almache_ReproductorMusical
 
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
-                audioProcessor.LoadFile(openFileDialog.FileName);
+                LoadFileRequested?.Invoke(this, openFileDialog.FileName);
                 lblFileName.Text = "Archivo: " + System.IO.Path.GetFileName(openFileDialog.FileName);
                 UpdateStatus("Archivo cargado");
                 
-                // Estimate duration (this is a rough estimation)
                 try
                 {
                     var fileInfo = new System.IO.FileInfo(openFileDialog.FileName);
-                    // Rough estimation: 1MB ≈ 1 minute for MP3 at 128kbps
                     double estimatedMinutes = fileInfo.Length / (1024.0 * 1024.0);
                     totalDuration = TimeSpan.FromMinutes(estimatedMinutes);
                 }
                 catch
                 {
-                    totalDuration = TimeSpan.FromMinutes(3); // Default 3 minutes
+                    totalDuration = TimeSpan.FromMinutes(3);
                 }
             }
         }
 
         private void btnPlay_Click(object sender, EventArgs e)
         {
-            if (audioProcessor.CurrentFile != null)
-            {
-                audioProcessor.Play();
-                animationTimer.Start();
-                playbackStartTime = DateTime.Now;
-                UpdateStatus("Reproduciendo");
-            }
-            else
-            {
-                MessageBox.Show("Por favor, cargue un archivo de audio primero.");
-            }
+            PlayRequested?.Invoke(this, EventArgs.Empty);
+            animationTimer.Start();
+            playbackStartTime = DateTime.Now;
+            UpdateStatus("Reproduciendo");
         }
 
         private void btnPause_Click(object sender, EventArgs e)
         {
-            audioProcessor.Pause();
+            PauseRequested?.Invoke(this, EventArgs.Empty);
             animationTimer.Stop();
             UpdateStatus("Pausado");
         }
 
         private void btnStop_Click(object sender, EventArgs e)
         {
-            audioProcessor.Stop();
+            StopRequested?.Invoke(this, EventArgs.Empty);
             animationTimer.Stop();
             UpdateStatus("Detenido");
             lblTime.Text = "00:00 / " + FormatTime(totalDuration);
             
-            // Clear visualization
             if (visualizationGraphics != null)
             {
                 visualizationGraphics.Clear(Color.Black);
@@ -132,7 +122,7 @@ namespace Quispe_Almache_ReproductorMusical
         private void trackBarVolume_Scroll(object sender, EventArgs e)
         {
             float volume = trackBarVolume.Value / 100.0f;
-            audioProcessor.SetVolume(volume);
+            VolumeChanged?.Invoke(this, volume);
             lblVolume.Text = "Volumen: " + trackBarVolume.Value + "%";
         }
 
@@ -160,17 +150,16 @@ namespace Quispe_Almache_ReproductorMusical
 
         private void AnimationTimer_Tick(object sender, EventArgs e)
         {
-            audioProcessor.UpdateAnalysis();
-            
-            // Update time display
-            if (audioProcessor.IsPlaying)
-            {
-                TimeSpan elapsed = DateTime.Now - playbackStartTime;
-                lblTime.Text = FormatTime(elapsed) + " / " + FormatTime(totalDuration);
-            }
+            TimerTicked?.Invoke(this, EventArgs.Empty);
         }
 
-        private void AudioProcessor_AudioDataUpdated(object sender, AudioDataEventArgs e)
+        public void UpdatePlaybackTime()
+        {
+            TimeSpan elapsed = DateTime.Now - playbackStartTime;
+            lblTime.Text = FormatTime(elapsed) + " / " + FormatTime(totalDuration);
+        }
+
+        public void RenderAudioData(AudioDataEventArgs e)
         {
             if (currentVisualizer != null && visualizationGraphics != null)
             {
@@ -204,7 +193,7 @@ namespace Quispe_Almache_ReproductorMusical
             animationTimer?.Dispose();
             visualizationGraphics?.Dispose();
             visualizationBitmap?.Dispose();
-            audioProcessor?.Stop();
+            FormClosingRequested?.Invoke(this, e);
             base.OnFormClosing(e);
         }
     }
