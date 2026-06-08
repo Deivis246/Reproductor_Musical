@@ -20,11 +20,11 @@ namespace Quispe_Almache_ReproductorMusical
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             
-            ReproductorModel model = new ReproductorModel();
-            FrmReproductor view = new FrmReproductor();
-            ReproductorController controller = new ReproductorController(model, view);
+            ReproductorModel modelo = new ReproductorModel();
+            FrmReproductor vista = new FrmReproductor();
+            ReproductorController controlador = new ReproductorController(modelo, vista);
             
-            controller.Run();
+            controlador.Iniciar();
         }
     }
 }

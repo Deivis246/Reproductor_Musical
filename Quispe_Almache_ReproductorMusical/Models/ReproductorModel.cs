@@ -18,229 +18,229 @@ namespace Quispe_Almache_ReproductorMusical.Models
         [DllImport("winmm.dll", CharSet = CharSet.Auto)]
         private static extern int mciSendString(string command, StringBuilder buffer, int bufferSize, IntPtr hwndCallback);
 
-        private string currentFile;
-        private bool isPlaying;
-        private bool isPaused;
-        private float volume = 1.0f;
-        private float[] audioData;
-        private float[] frequencyData;
-        private int fftSize = 512;
-        private Random random;
-        private string alias = "myAudio";
-        private DateTime playbackStartTime;
-        private int frameCount;
-        private float[] bassBand;
-        private float[] midBand;
-        private float[] trebleBand;
-        private float beatIntensity;
-        private float previousBeatIntensity;
+        private string archivoActual;
+        private bool estaReproduciendo;
+        private bool estaPausado;
+        private float volumen = 1.0f;
+        private float[] datosAudio;
+        private float[] datosFrecuencia;
+        private int tamanioFft = 512;
+        private Random aleatorio;
+        private string alias = "miAudio";
+        private DateTime tiempoInicioReproduccion;
+        private int contadorFrames;
+        private float[] bandaBajos;
+        private float[] bandaMedios;
+        private float[] bandaAltos;
+        private float intensidadGolpe;
+        private float intensidadGolpeAnterior;
 
-        public event EventHandler<AudioDataEventArgs> AudioDataUpdated;
+        public event EventHandler<DatosAudioEventArgs> DatosAudioActualizados;
 
         public ReproductorModel()
         {
-            isPlaying = false;
-            isPaused = false;
-            audioData = new float[fftSize];
-            frequencyData = new float[fftSize / 2];
-            bassBand = new float[32];
-            midBand = new float[64];
-            trebleBand = new float[128];
-            random = new Random();
-            frameCount = 0;
-            beatIntensity = 0;
-            previousBeatIntensity = 0;
+            estaReproduciendo = false;
+            estaPausado = false;
+            datosAudio = new float[tamanioFft];
+            datosFrecuencia = new float[tamanioFft / 2];
+            bandaBajos = new float[32];
+            bandaMedios = new float[64];
+            bandaAltos = new float[128];
+            aleatorio = new Random();
+            contadorFrames = 0;
+            intensidadGolpe = 0;
+            intensidadGolpeAnterior = 0;
         }
 
-        public void LoadFile(string filePath)
+        public void CargarArchivo(string rutaArchivo)
         {
             try
             {
-                // Close any existing audio
+                // Cerrar cualquier audio existente
                 mciSendString($"close {alias}", null, 0, IntPtr.Zero);
 
-                // Open the new file
-                string command = $"open \"{filePath}\" type mpegvideo alias {alias}";
-                int result = mciSendString(command, null, 0, IntPtr.Zero);
+                // Abrir el nuevo archivo
+                string comando = $"open \"{rutaArchivo}\" type mpegvideo alias {alias}";
+                int resultado = mciSendString(comando, null, 0, IntPtr.Zero);
 
-                if (result == 0)
+                if (resultado == 0)
                 {
-                    currentFile = filePath;
-                    isPlaying = false;
-                    isPaused = false;
+                    archivoActual = rutaArchivo;
+                    estaReproduciendo = false;
+                    estaPausado = false;
                 }
                 else
                 {
-                    MessageBox.Show($"Error loading file: Could not open audio file. Error code: {result}");
+                    MessageBox.Show($"Error al cargar archivo: No se pudo abrir el archivo de audio. Código de error: {resultado}");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading file: {ex.Message}");
+                MessageBox.Show($"Error al cargar archivo: {ex.Message}");
             }
         }
 
-        public void Play()
+        public void Reproducir()
         {
-            if (currentFile != null && !isPlaying)
+            if (archivoActual != null && !estaReproduciendo)
             {
                 try
                 {
-                    int result = mciSendString($"play {alias}", null, 0, IntPtr.Zero);
-                    if (result == 0)
+                    int resultado = mciSendString($"play {alias}", null, 0, IntPtr.Zero);
+                    if (resultado == 0)
                     {
-                        isPlaying = true;
-                        isPaused = false;
-                        playbackStartTime = DateTime.Now;
-                        frameCount = 0;
+                        estaReproduciendo = true;
+                        estaPausado = false;
+                        tiempoInicioReproduccion = DateTime.Now;
+                        contadorFrames = 0;
                     }
                     else
                     {
-                        MessageBox.Show($"Error playing: Error code: {result}");
+                        MessageBox.Show($"Error al reproducir: Código de error: {resultado}");
                     }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Error playing: {ex.Message}");
+                    MessageBox.Show($"Error al reproducir: {ex.Message}");
                 }
             }
         }
 
-        public void Pause()
+        public void Pausar()
         {
-            if (isPlaying)
+            if (estaReproduciendo)
             {
                 try
                 {
-                    int result = mciSendString($"pause {alias}", null, 0, IntPtr.Zero);
-                    if (result == 0)
+                    int resultado = mciSendString($"pause {alias}", null, 0, IntPtr.Zero);
+                    if (resultado == 0)
                     {
-                        isPaused = true;
-                        isPlaying = false;
+                        estaPausado = true;
+                        estaReproduciendo = false;
                     }
                     else
                     {
-                        MessageBox.Show($"Error pausing: Error code: {result}");
+                        MessageBox.Show($"Error al pausar: Código de error: {resultado}");
                     }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Error pausing: {ex.Message}");
+                    MessageBox.Show($"Error al pausar: {ex.Message}");
                 }
             }
         }
 
-        public void Stop()
+        public void Detener()
         {
             try
             {
-                int result = mciSendString($"stop {alias}", null, 0, IntPtr.Zero);
-                if (result == 0)
+                int resultado = mciSendString($"stop {alias}", null, 0, IntPtr.Zero);
+                if (resultado == 0)
                 {
                     mciSendString($"seek {alias} to start", null, 0, IntPtr.Zero);
-                    isPlaying = false;
-                    isPaused = false;
+                    estaReproduciendo = false;
+                    estaPausado = false;
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error stopping: {ex.Message}");
+                MessageBox.Show($"Error al detener: {ex.Message}");
             }
         }
 
-        public void SetVolume(float vol)
+        public void EstablecerVolumen(float vol)
         {
-            volume = Math.Max(0, Math.Min(1, vol));
-            uint newVolume = (uint)(volume * 0xFFFF);
-            waveOutSetVolume(IntPtr.Zero, newVolume | (newVolume << 16));
+            volumen = Math.Max(0, Math.Min(1, vol));
+            uint nuevoVolumen = (uint)(volumen * 0xFFFF);
+            waveOutSetVolume(IntPtr.Zero, nuevoVolumen | (nuevoVolumen << 16));
             
-            // Also set MCI volume
-            int mciVolume = (int)(volume * 1000);
-            mciSendString($"setaudio {alias} volume to {mciVolume}", null, 0, IntPtr.Zero);
+            // También establecer volumen MCI
+            int volumenMci = (int)(volumen * 1000);
+            mciSendString($"setaudio {alias} volume to {volumenMci}", null, 0, IntPtr.Zero);
         }
 
-        public float GetVolume()
+        public float ObtenerVolumen()
         {
-            return volume;
+            return volumen;
         }
 
-        public bool IsPlaying => isPlaying;
-        public bool IsPaused => isPaused;
-        public string CurrentFile => currentFile;
+        public bool EstaReproduciendo => estaReproduciendo;
+        public bool EstaPausado => estaPausado;
+        public string ArchivoActual => archivoActual;
 
-        // Simulate audio data analysis with improved synchronization
-        public void UpdateAnalysis()
+        // Simular análisis de datos de audio con sincronización mejorada
+        public void ActualizarAnalisis()
         {
-            if (isPlaying)
+            if (estaReproduciendo)
             {
-                frameCount++;
-                double timeSinceStart = (DateTime.Now - playbackStartTime).TotalSeconds;
+                contadorFrames++;
+                double tiempoDesdeInicio = (DateTime.Now - tiempoInicioReproduccion).TotalSeconds;
                 
-                // Simulate realistic audio patterns based on time
-                double beatPattern = Math.Sin(timeSinceStart * 8) * 0.5 + 0.5; // ~120 BPM
-                double bassPattern = Math.Sin(timeSinceStart * 4) * 0.7 + 0.3;
-                double midPattern = Math.Sin(timeSinceStart * 12) * 0.4 + 0.6;
-                double treblePattern = Math.Sin(timeSinceStart * 16) * 0.3 + 0.7;
+                // Simular patrones de audio realistas basados en tiempo
+                double patronGolpe = Math.Sin(tiempoDesdeInicio * 8) * 0.5 + 0.5; // ~120 BPM
+                double patronBajo = Math.Sin(tiempoDesdeInicio * 4) * 0.7 + 0.3;
+                double patronMedio = Math.Sin(tiempoDesdeInicio * 12) * 0.4 + 0.6;
+                double patronAlto = Math.Sin(tiempoDesdeInicio * 16) * 0.3 + 0.7;
                 
-                // Detect beat (sudden increase in energy)
-                float currentBeatEnergy = (float)bassPattern * volume;
-                beatIntensity = currentBeatEnergy - previousBeatIntensity;
-                previousBeatIntensity = currentBeatEnergy;
+                // Detectar golpe (aumento repentino de energía)
+                float energiaGolpeActual = (float)patronBajo * volumen;
+                intensidadGolpe = energiaGolpeActual - intensidadGolpeAnterior;
+                intensidadGolpeAnterior = energiaGolpeActual;
                 
-                // Generate audio data with frequency band separation
-                for (int i = 0; i < fftSize; i++)
+                // Generar datos de audio con separación por bandas de frecuencia
+                for (int i = 0; i < tamanioFft; i++)
                 {
-                    float sample = 0;
+                    float muestra = 0;
                     
-                    // Bass frequencies (low indices)
-                    if (i < fftSize / 8)
+                    // Frecuencias bajas (índices bajos)
+                    if (i < tamanioFft / 8)
                     {
-                        sample = (float)(bassPattern * volume * (1 + random.NextDouble() * 0.3));
-                        bassBand[i % bassBand.Length] = sample;
+                        muestra = (float)(patronBajo * volumen * (1 + aleatorio.NextDouble() * 0.3));
+                        bandaBajos[i % bandaBajos.Length] = muestra;
                     }
-                    // Mid frequencies
-                    else if (i < fftSize / 2)
+                    // Frecuencias medias
+                    else if (i < tamanioFft / 2)
                     {
-                        sample = (float)(midPattern * volume * (1 + random.NextDouble() * 0.2));
-                        midBand[(i - fftSize / 8) % midBand.Length] = sample;
+                        muestra = (float)(patronMedio * volumen * (1 + aleatorio.NextDouble() * 0.2));
+                        bandaMedios[(i - tamanioFft / 8) % bandaMedios.Length] = muestra;
                     }
-                    // Treble frequencies (high indices)
+                    // Frecuencias altas (índices altos)
                     else
                     {
-                        sample = (float)(treblePattern * volume * (1 + random.NextDouble() * 0.1));
-                        trebleBand[(i - fftSize / 2) % trebleBand.Length] = sample;
+                        muestra = (float)(patronAlto * volumen * (1 + aleatorio.NextDouble() * 0.1));
+                        bandaAltos[(i - tamanioFft / 2) % bandaAltos.Length] = muestra;
                     }
                     
-                    audioData[i] = Math.Max(0, Math.Min(1, sample));
+                    datosAudio[i] = Math.Max(0, Math.Min(1, muestra));
                 }
 
-                // Perform FFT to get frequency data
-                PerformFFT(audioData, frequencyData);
+                // Realizar FFT para obtener datos de frecuencia
+                RealizarFFT(datosAudio, datosFrecuencia);
 
-                // Raise event with updated data including frequency bands
-                AudioDataUpdated?.Invoke(this, new AudioDataEventArgs(audioData, frequencyData, volume, 
-                    bassBand, midBand, trebleBand, beatIntensity));
+                // Lanzar evento con datos actualizados incluyendo bandas de frecuencia
+                DatosAudioActualizados?.Invoke(this, new DatosAudioEventArgs(datosAudio, datosFrecuencia, volumen, 
+                    bandaBajos, bandaMedios, bandaAltos, intensidadGolpe));
             }
         }
 
-        private void PerformFFT(float[] input, float[] output)
+        private void RealizarFFT(float[] entrada, float[] salida)
         {
-            int n = input.Length;
+            int n = entrada.Length;
             int m = (int)Math.Log(n, 2);
 
-            // Bit-reversal permutation
+            // Permutación bit a bit
             for (int i = 0; i < n; i++)
             {
-                int j = ReverseBits(i, m);
+                int j = InvertirBits(i, m);
                 if (j > i)
                 {
-                    float temp = input[i];
-                    input[i] = input[j];
-                    input[j] = temp;
+                    float temporal = entrada[i];
+                    entrada[i] = entrada[j];
+                    entrada[j] = temporal;
                 }
             }
 
-            // Cooley-Tukey FFT
+            // FFT Cooley-Tukey
             for (int s = 1; s <= m; s++)
             {
                 int m2 = 1 << s;
@@ -257,11 +257,11 @@ namespace Quispe_Almache_ReproductorMusical.Models
                         int idx1 = k + j;
                         int idx2 = k + j + m1;
 
-                        float tRe = w[0] * input[idx2] - w[1] * 0;
-                        float tIm = w[0] * 0 + w[1] * input[idx2];
+                        float tRe = w[0] * entrada[idx2] - w[1] * 0;
+                        float tIm = w[0] * 0 + w[1] * entrada[idx2];
 
-                        input[idx2] = input[idx1] - tRe;
-                        input[idx1] = input[idx1] + tRe;
+                        entrada[idx2] = entrada[idx1] - tRe;
+                        entrada[idx1] = entrada[idx1] + tRe;
 
                         float wRe = w[0] * wm[0] - w[1] * wm[1];
                         float wIm = w[0] * wm[1] + w[1] * wm[0];
@@ -271,59 +271,59 @@ namespace Quispe_Almache_ReproductorMusical.Models
                 }
             }
 
-            // Copy magnitude to output
-            for (int i = 0; i < output.Length; i++)
+            // Copiar magnitud a la salida
+            for (int i = 0; i < salida.Length; i++)
             {
-                output[i] = (float)Math.Sqrt(input[i] * input[i] + input[i + n/2] * input[i + n/2]);
+                salida[i] = (float)Math.Sqrt(entrada[i] * entrada[i] + entrada[i + n/2] * entrada[i + n/2]);
             }
         }
 
-        private int ReverseBits(int n, int bits)
+        private int InvertirBits(int n, int bits)
         {
-            int reversed = 0;
+            int invertido = 0;
             for (int i = 0; i < bits; i++)
             {
-                reversed = (reversed << 1) | (n & 1);
+                invertido = (invertido << 1) | (n & 1);
                 n >>= 1;
             }
-            return reversed;
+            return invertido;
         }
 
-        public float[] GetAudioData() => audioData;
-        public float[] GetFrequencyData() => frequencyData;
+        public float[] ObtenerDatosAudio() => datosAudio;
+        public float[] ObtenerDatosFrecuencia() => datosFrecuencia;
     }
 
-    public class AudioDataEventArgs : EventArgs
+    public class DatosAudioEventArgs : EventArgs
     {
-        public float[] AudioData { get; }
-        public float[] FrequencyData { get; }
-        public float Volume { get; }
-        public float[] BassBand { get; }
-        public float[] MidBand { get; }
-        public float[] TrebleBand { get; }
-        public float BeatIntensity { get; }
+        public float[] DatosAudio { get; }
+        public float[] DatosFrecuencia { get; }
+        public float Volumen { get; }
+        public float[] BandaBajos { get; }
+        public float[] BandaMedios { get; }
+        public float[] BandaAltos { get; }
+        public float IntensidadGolpe { get; }
 
-        public AudioDataEventArgs(float[] audioData, float[] frequencyData, float volume)
+        public DatosAudioEventArgs(float[] datosAudio, float[] datosFrecuencia, float volumen)
         {
-            AudioData = audioData;
-            FrequencyData = frequencyData;
-            Volume = volume;
-            BassBand = new float[0];
-            MidBand = new float[0];
-            TrebleBand = new float[0];
-            BeatIntensity = 0;
+            DatosAudio = datosAudio;
+            DatosFrecuencia = datosFrecuencia;
+            Volumen = volumen;
+            BandaBajos = new float[0];
+            BandaMedios = new float[0];
+            BandaAltos = new float[0];
+            IntensidadGolpe = 0;
         }
 
-        public AudioDataEventArgs(float[] audioData, float[] frequencyData, float volume, 
-            float[] bassBand, float[] midBand, float[] trebleBand, float beatIntensity)
+        public DatosAudioEventArgs(float[] datosAudio, float[] datosFrecuencia, float volumen, 
+            float[] bandaBajos, float[] bandaMedios, float[] bandaAltos, float intensidadGolpe)
         {
-            AudioData = audioData;
-            FrequencyData = frequencyData;
-            Volume = volume;
-            BassBand = bassBand;
-            MidBand = midBand;
-            TrebleBand = trebleBand;
-            BeatIntensity = beatIntensity;
+            DatosAudio = datosAudio;
+            DatosFrecuencia = datosFrecuencia;
+            Volumen = volumen;
+            BandaBajos = bandaBajos;
+            BandaMedios = bandaMedios;
+            BandaAltos = bandaAltos;
+            IntensidadGolpe = intensidadGolpe;
         }
     }
 }

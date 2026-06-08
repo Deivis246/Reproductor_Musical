@@ -28,177 +28,177 @@ namespace Quispe_Almache_ReproductorMusical.Views
         /// </summary>
         private void InitializeComponent()
         {
-            this.visualizationPanel = new System.Windows.Forms.Panel();
-            this.btnLoad = new System.Windows.Forms.Button();
-            this.btnPlay = new System.Windows.Forms.Button();
-            this.btnPause = new System.Windows.Forms.Button();
-            this.btnStop = new System.Windows.Forms.Button();
-            this.trackBarVolume = new System.Windows.Forms.TrackBar();
-            this.lblVolume = new System.Windows.Forms.Label();
-            this.lblTime = new System.Windows.Forms.Label();
-            this.cmbVisualizationMode = new System.Windows.Forms.ComboBox();
-            this.lblVisualizationMode = new System.Windows.Forms.Label();
-            this.lblFileName = new System.Windows.Forms.Label();
-            this.lblStatus = new System.Windows.Forms.Label();
-            ((System.ComponentModel.ISupportInitialize)(this.trackBarVolume)).BeginInit();
+            this.panelVisualizacion = new System.Windows.Forms.Panel();
+            this.btnCargar = new System.Windows.Forms.Button();
+            this.btnReproducir = new System.Windows.Forms.Button();
+            this.btnPausar = new System.Windows.Forms.Button();
+            this.btnDetener = new System.Windows.Forms.Button();
+            this.barraVolumen = new System.Windows.Forms.TrackBar();
+            this.lblVolumen = new System.Windows.Forms.Label();
+            this.lblTiempo = new System.Windows.Forms.Label();
+            this.cmbModoVisualizacion = new System.Windows.Forms.ComboBox();
+            this.lblModoVisualizacion = new System.Windows.Forms.Label();
+            this.lblNombreArchivo = new System.Windows.Forms.Label();
+            this.lblEstado = new System.Windows.Forms.Label();
+            ((System.ComponentModel.ISupportInitialize)(this.barraVolumen)).BeginInit();
             this.SuspendLayout();
             // 
-            // visualizationPanel
+            // panelVisualizacion
             // 
-            this.visualizationPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.panelVisualizacion.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.visualizationPanel.BackColor = System.Drawing.Color.Black;
-            this.visualizationPanel.Location = new System.Drawing.Point(12, 12);
-            this.visualizationPanel.Name = "visualizationPanel";
-            this.visualizationPanel.Size = new System.Drawing.Size(760, 350);
-            this.visualizationPanel.TabIndex = 0;
+            this.panelVisualizacion.BackColor = System.Drawing.Color.Black;
+            this.panelVisualizacion.Location = new System.Drawing.Point(12, 12);
+            this.panelVisualizacion.Name = "panelVisualizacion";
+            this.panelVisualizacion.Size = new System.Drawing.Size(760, 350);
+            this.panelVisualizacion.TabIndex = 0;
             // 
-            // btnLoad
+            // btnCargar
             // 
-            this.btnLoad.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnLoad.Location = new System.Drawing.Point(12, 368);
-            this.btnLoad.Name = "btnLoad";
-            this.btnLoad.Size = new System.Drawing.Size(75, 30);
-            this.btnLoad.TabIndex = 1;
-            this.btnLoad.Text = "Cargar";
-            this.btnLoad.UseVisualStyleBackColor = true;
-            this.btnLoad.Click += new System.EventHandler(this.btnLoad_Click);
+            this.btnCargar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnCargar.Location = new System.Drawing.Point(12, 368);
+            this.btnCargar.Name = "btnCargar";
+            this.btnCargar.Size = new System.Drawing.Size(75, 30);
+            this.btnCargar.TabIndex = 1;
+            this.btnCargar.Text = "Cargar";
+            this.btnCargar.UseVisualStyleBackColor = true;
+            this.btnCargar.Click += new System.EventHandler(this.btnCargar_Click);
             // 
-            // btnPlay
+            // btnReproducir
             // 
-            this.btnPlay.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnPlay.Location = new System.Drawing.Point(93, 368);
-            this.btnPlay.Name = "btnPlay";
-            this.btnPlay.Size = new System.Drawing.Size(75, 30);
-            this.btnPlay.TabIndex = 2;
-            this.btnPlay.Text = "Reproducir";
-            this.btnPlay.UseVisualStyleBackColor = true;
-            this.btnPlay.Click += new System.EventHandler(this.btnPlay_Click);
+            this.btnReproducir.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnReproducir.Location = new System.Drawing.Point(93, 368);
+            this.btnReproducir.Name = "btnReproducir";
+            this.btnReproducir.Size = new System.Drawing.Size(75, 30);
+            this.btnReproducir.TabIndex = 2;
+            this.btnReproducir.Text = "Reproducir";
+            this.btnReproducir.UseVisualStyleBackColor = true;
+            this.btnReproducir.Click += new System.EventHandler(this.btnReproducir_Click);
             // 
-            // btnPause
+            // btnPausar
             // 
-            this.btnPause.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnPause.Location = new System.Drawing.Point(174, 368);
-            this.btnPause.Name = "btnPause";
-            this.btnPause.Size = new System.Drawing.Size(75, 30);
-            this.btnPause.TabIndex = 3;
-            this.btnPause.Text = "Pausar";
-            this.btnPause.UseVisualStyleBackColor = true;
-            this.btnPause.Click += new System.EventHandler(this.btnPause_Click);
+            this.btnPausar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnPausar.Location = new System.Drawing.Point(174, 368);
+            this.btnPausar.Name = "btnPausar";
+            this.btnPausar.Size = new System.Drawing.Size(75, 30);
+            this.btnPausar.TabIndex = 3;
+            this.btnPausar.Text = "Pausar";
+            this.btnPausar.UseVisualStyleBackColor = true;
+            this.btnPausar.Click += new System.EventHandler(this.btnPausar_Click);
             // 
-            // btnStop
+            // btnDetener
             // 
-            this.btnStop.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnStop.Location = new System.Drawing.Point(255, 368);
-            this.btnStop.Name = "btnStop";
-            this.btnStop.Size = new System.Drawing.Size(75, 30);
-            this.btnStop.TabIndex = 4;
-            this.btnStop.Text = "Detener";
-            this.btnStop.UseVisualStyleBackColor = true;
-            this.btnStop.Click += new System.EventHandler(this.btnStop_Click);
+            this.btnDetener.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnDetener.Location = new System.Drawing.Point(255, 368);
+            this.btnDetener.Name = "btnDetener";
+            this.btnDetener.Size = new System.Drawing.Size(75, 30);
+            this.btnDetener.TabIndex = 4;
+            this.btnDetener.Text = "Detener";
+            this.btnDetener.UseVisualStyleBackColor = true;
+            this.btnDetener.Click += new System.EventHandler(this.btnDetener_Click);
             // 
-            // trackBarVolume
+            // barraVolumen
             // 
-            this.trackBarVolume.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.trackBarVolume.Location = new System.Drawing.Point(336, 375);
-            this.trackBarVolume.Maximum = 100;
-            this.trackBarVolume.Name = "trackBarVolume";
-            this.trackBarVolume.Size = new System.Drawing.Size(150, 45);
-            this.trackBarVolume.TabIndex = 5;
-            this.trackBarVolume.Value = 100;
-            this.trackBarVolume.Scroll += new System.EventHandler(this.trackBarVolume_Scroll);
+            this.barraVolumen.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.barraVolumen.Location = new System.Drawing.Point(336, 375);
+            this.barraVolumen.Maximum = 100;
+            this.barraVolumen.Name = "barraVolumen";
+            this.barraVolumen.Size = new System.Drawing.Size(150, 45);
+            this.barraVolumen.TabIndex = 5;
+            this.barraVolumen.Value = 100;
+            this.barraVolumen.Scroll += new System.EventHandler(this.barraVolumen_Scroll);
             // 
-            // lblVolume
+            // lblVolumen
             // 
-            this.lblVolume.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.lblVolume.AutoSize = true;
-            this.lblVolume.Location = new System.Drawing.Point(336, 355);
-            this.lblVolume.Name = "lblVolume";
-            this.lblVolume.Size = new System.Drawing.Size(47, 13);
-            this.lblVolume.TabIndex = 6;
-            this.lblVolume.Text = "Volumen";
+            this.lblVolumen.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.lblVolumen.AutoSize = true;
+            this.lblVolumen.Location = new System.Drawing.Point(336, 355);
+            this.lblVolumen.Name = "lblVolumen";
+            this.lblVolumen.Size = new System.Drawing.Size(47, 13);
+            this.lblVolumen.TabIndex = 6;
+            this.lblVolumen.Text = "Volumen";
             // 
-            // lblTime
+            // lblTiempo
             // 
-            this.lblTime.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblTime.AutoSize = true;
-            this.lblTime.Location = new System.Drawing.Point(700, 355);
-            this.lblTime.Name = "lblTime";
-            this.lblTime.Size = new System.Drawing.Size(72, 13);
-            this.lblTime.TabIndex = 7;
-            this.lblTime.Text = "00:00 / 00:00";
+            this.lblTiempo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblTiempo.AutoSize = true;
+            this.lblTiempo.Location = new System.Drawing.Point(700, 355);
+            this.lblTiempo.Name = "lblTiempo";
+            this.lblTiempo.Size = new System.Drawing.Size(72, 13);
+            this.lblTiempo.TabIndex = 7;
+            this.lblTiempo.Text = "00:00 / 00:00";
             // 
-            // cmbVisualizationMode
+            // cmbModoVisualizacion
             // 
-            this.cmbVisualizationMode.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.cmbVisualizationMode.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbVisualizationMode.FormattingEnabled = true;
-            this.cmbVisualizationMode.Items.AddRange(new object[] {
+            this.cmbModoVisualizacion.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.cmbModoVisualizacion.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbModoVisualizacion.FormattingEnabled = true;
+            this.cmbModoVisualizacion.Items.AddRange(new object[] {
             "Barras de Espectro",
             "Onda de Audio",
             "Partículas",
             "Formas Geométricas",
             "Espectro Circular"});
-            this.cmbVisualizationMode.Location = new System.Drawing.Point(502, 370);
-            this.cmbVisualizationMode.Name = "cmbVisualizationMode";
-            this.cmbVisualizationMode.Size = new System.Drawing.Size(150, 21);
-            this.cmbVisualizationMode.TabIndex = 8;
-            this.cmbVisualizationMode.SelectedIndexChanged += new System.EventHandler(this.cmbVisualizationMode_SelectedIndexChanged);
+            this.cmbModoVisualizacion.Location = new System.Drawing.Point(502, 370);
+            this.cmbModoVisualizacion.Name = "cmbModoVisualizacion";
+            this.cmbModoVisualizacion.Size = new System.Drawing.Size(150, 21);
+            this.cmbModoVisualizacion.TabIndex = 8;
+            this.cmbModoVisualizacion.SelectedIndexChanged += new System.EventHandler(this.cmbModoVisualizacion_SelectedIndexChanged);
             // 
-            // lblVisualizationMode
+            // lblModoVisualizacion
             // 
-            this.lblVisualizationMode.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.lblVisualizationMode.AutoSize = true;
-            this.lblVisualizationMode.Location = new System.Drawing.Point(502, 355);
-            this.lblVisualizationMode.Name = "lblVisualizationMode";
-            this.lblVisualizationMode.Size = new System.Drawing.Size(119, 13);
-            this.lblVisualizationMode.TabIndex = 9;
-            this.lblVisualizationMode.Text = "Modo de Visualización";
+            this.lblModoVisualizacion.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.lblModoVisualizacion.AutoSize = true;
+            this.lblModoVisualizacion.Location = new System.Drawing.Point(502, 355);
+            this.lblModoVisualizacion.Name = "lblModoVisualizacion";
+            this.lblModoVisualizacion.Size = new System.Drawing.Size(119, 13);
+            this.lblModoVisualizacion.TabIndex = 9;
+            this.lblModoVisualizacion.Text = "Modo de Visualización";
             // 
-            // lblFileName
+            // lblNombreArchivo
             // 
-            this.lblFileName.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblFileName.AutoSize = true;
-            this.lblFileName.Location = new System.Drawing.Point(500, 410);
-            this.lblFileName.Name = "lblFileName";
-            this.lblFileName.Size = new System.Drawing.Size(272, 13);
-            this.lblFileName.TabIndex = 10;
-            this.lblFileName.Text = "Archivo: Ninguno cargado";
+            this.lblNombreArchivo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblNombreArchivo.AutoSize = true;
+            this.lblNombreArchivo.Location = new System.Drawing.Point(500, 410);
+            this.lblNombreArchivo.Name = "lblNombreArchivo";
+            this.lblNombreArchivo.Size = new System.Drawing.Size(272, 13);
+            this.lblNombreArchivo.TabIndex = 10;
+            this.lblNombreArchivo.Text = "Archivo: Ninguno cargado";
             // 
-            // lblStatus
+            // lblEstado
             // 
-            this.lblStatus.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.lblStatus.AutoSize = true;
-            this.lblStatus.Location = new System.Drawing.Point(12, 410);
-            this.lblStatus.Name = "lblStatus";
-            this.lblStatus.Size = new System.Drawing.Size(45, 13);
-            this.lblStatus.TabIndex = 11;
-            this.lblStatus.Text = "Estado: -";
+            this.lblEstado.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.lblEstado.AutoSize = true;
+            this.lblEstado.Location = new System.Drawing.Point(12, 410);
+            this.lblEstado.Name = "lblEstado";
+            this.lblEstado.Size = new System.Drawing.Size(45, 13);
+            this.lblEstado.TabIndex = 11;
+            this.lblEstado.Text = "Estado: -";
             // 
-            // Form1
+            // FrmReproductor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(784, 435);
-            this.Controls.Add(this.lblStatus);
-            this.Controls.Add(this.lblFileName);
-            this.Controls.Add(this.lblVisualizationMode);
-            this.Controls.Add(this.cmbVisualizationMode);
-            this.Controls.Add(this.lblTime);
-            this.Controls.Add(this.lblVolume);
-            this.Controls.Add(this.trackBarVolume);
-            this.Controls.Add(this.btnStop);
-            this.Controls.Add(this.btnPause);
-            this.Controls.Add(this.btnPlay);
-            this.Controls.Add(this.btnLoad);
-            this.Controls.Add(this.visualizationPanel);
+            this.Controls.Add(this.lblEstado);
+            this.Controls.Add(this.lblNombreArchivo);
+            this.Controls.Add(this.lblModoVisualizacion);
+            this.Controls.Add(this.cmbModoVisualizacion);
+            this.Controls.Add(this.lblTiempo);
+            this.Controls.Add(this.lblVolumen);
+            this.Controls.Add(this.barraVolumen);
+            this.Controls.Add(this.btnDetener);
+            this.Controls.Add(this.btnPausar);
+            this.Controls.Add(this.btnReproducir);
+            this.Controls.Add(this.btnCargar);
+            this.Controls.Add(this.panelVisualizacion);
             this.MinimumSize = new System.Drawing.Size(800, 470);
-            this.Name = "Form1";
+            this.Name = "FrmReproductor";
             this.Text = "Reproductor Musical con Animaciones Sincronizadas";
-            this.Load += new System.EventHandler(this.Form1_Load);
-            this.Resize += new System.EventHandler(this.Form1_Resize);
-            ((System.ComponentModel.ISupportInitialize)(this.trackBarVolume)).EndInit();
+            this.Load += new System.EventHandler(this.FrmReproductor_Load);
+            this.Resize += new System.EventHandler(this.FrmReproductor_Resize);
+            ((System.ComponentModel.ISupportInitialize)(this.barraVolumen)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -206,18 +206,17 @@ namespace Quispe_Almache_ReproductorMusical.Views
 
         #endregion
 
-        private System.Windows.Forms.Panel visualizationPanel;
-        private System.Windows.Forms.Button btnLoad;
-        private System.Windows.Forms.Button btnPlay;
-        private System.Windows.Forms.Button btnPause;
-        private System.Windows.Forms.Button btnStop;
-        private System.Windows.Forms.TrackBar trackBarVolume;
-        private System.Windows.Forms.Label lblVolume;
-        private System.Windows.Forms.Label lblTime;
-        private System.Windows.Forms.ComboBox cmbVisualizationMode;
-        private System.Windows.Forms.Label lblVisualizationMode;
-        private System.Windows.Forms.Label lblFileName;
-        private System.Windows.Forms.Label lblStatus;
+        private System.Windows.Forms.Panel panelVisualizacion;
+        private System.Windows.Forms.Button btnCargar;
+        private System.Windows.Forms.Button btnReproducir;
+        private System.Windows.Forms.Button btnPausar;
+        private System.Windows.Forms.Button btnDetener;
+        private System.Windows.Forms.TrackBar barraVolumen;
+        private System.Windows.Forms.Label lblVolumen;
+        private System.Windows.Forms.Label lblTiempo;
+        private System.Windows.Forms.ComboBox cmbModoVisualizacion;
+        private System.Windows.Forms.Label lblModoVisualizacion;
+        private System.Windows.Forms.Label lblNombreArchivo;
+        private System.Windows.Forms.Label lblEstado;
     }
 }
-

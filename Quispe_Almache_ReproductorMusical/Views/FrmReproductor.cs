@@ -8,192 +8,192 @@ namespace Quispe_Almache_ReproductorMusical.Views
 {
     public partial class FrmReproductor : Form
     {
-        private Visualizer currentVisualizer;
-        private Timer animationTimer;
-        private Bitmap visualizationBitmap;
-        private Graphics visualizationGraphics;
-        private DateTime playbackStartTime;
-        private TimeSpan totalDuration;
+        private Visualizador visualizadorActual;
+        private Timer temporizadorAnimacion;
+        private Bitmap mapaBitsVisualizacion;
+        private Graphics graficosVisualizacion;
+        private DateTime tiempoInicioReproduccion;
+        private TimeSpan duracionTotal;
 
-        public event EventHandler<string> LoadFileRequested;
-        public event EventHandler PlayRequested;
-        public event EventHandler PauseRequested;
-        public event EventHandler StopRequested;
-        public event EventHandler<float> VolumeChanged;
-        public event EventHandler TimerTicked;
-        public event EventHandler<FormClosingEventArgs> FormClosingRequested;
+        public event EventHandler<string> ArchivoCargadoSolicitado;
+        public event EventHandler ReproduccionSolicitada;
+        public event EventHandler PausaSolicitada;
+        public event EventHandler DetencionSolicitada;
+        public event EventHandler<float> VolumenCambiado;
+        public event EventHandler TemporizadorTick;
+        public event EventHandler<FormClosingEventArgs> CierreFormularioSolicitado;
 
         public FrmReproductor()
         {
             InitializeComponent();
-            InitializeComponents();
+            InicializarComponentes();
         }
 
-        private void InitializeComponents()
+        private void InicializarComponentes()
         {
-            currentVisualizer = new SpectrumBarsVisualizer(visualizationPanel.Width, visualizationPanel.Height);
+            visualizadorActual = new VisualizadorBarrasEspectro(panelVisualizacion.Width, panelVisualizacion.Height);
 
-            visualizationBitmap = new Bitmap(visualizationPanel.Width, visualizationPanel.Height);
-            visualizationGraphics = Graphics.FromImage(visualizationBitmap);
+            mapaBitsVisualizacion = new Bitmap(panelVisualizacion.Width, panelVisualizacion.Height);
+            graficosVisualizacion = Graphics.FromImage(mapaBitsVisualizacion);
 
-            animationTimer = new Timer();
-            animationTimer.Interval = 30; // ~33 FPS
-            animationTimer.Tick += AnimationTimer_Tick;
+            temporizadorAnimacion = new Timer();
+            temporizadorAnimacion.Interval = 30; // ~33 FPS
+            temporizadorAnimacion.Tick += TemporizadorAnimacion_Tick;
 
-            cmbVisualizationMode.SelectedIndex = 0;
-            totalDuration = TimeSpan.Zero;
+            cmbModoVisualizacion.SelectedIndex = 0;
+            duracionTotal = TimeSpan.Zero;
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+        private void FrmReproductor_Load(object sender, EventArgs e)
         {
-            UpdateStatus("Listo");
+            ActualizarEstado("Listo");
         }
 
-        private void Form1_Resize(object sender, EventArgs e)
+        private void FrmReproductor_Resize(object sender, EventArgs e)
         {
-            if (visualizationBitmap != null && visualizationPanel.Width > 0 && visualizationPanel.Height > 0)
+            if (mapaBitsVisualizacion != null && panelVisualizacion.Width > 0 && panelVisualizacion.Height > 0)
             {
-                visualizationBitmap.Dispose();
-                visualizationBitmap = new Bitmap(visualizationPanel.Width, visualizationPanel.Height);
-                visualizationGraphics.Dispose();
-                visualizationGraphics = Graphics.FromImage(visualizationBitmap);
+                mapaBitsVisualizacion.Dispose();
+                mapaBitsVisualizacion = new Bitmap(panelVisualizacion.Width, panelVisualizacion.Height);
+                graficosVisualizacion.Dispose();
+                graficosVisualizacion = Graphics.FromImage(mapaBitsVisualizacion);
 
-                if (currentVisualizer != null)
+                if (visualizadorActual != null)
                 {
-                    currentVisualizer.SetSize(visualizationPanel.Width, visualizationPanel.Height);
+                    visualizadorActual.EstablecerTamanio(panelVisualizacion.Width, panelVisualizacion.Height);
                 }
             }
         }
 
-        private void btnLoad_Click(object sender, EventArgs e)
+        private void btnCargar_Click(object sender, EventArgs e)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "Archivos de Audio|*.wav;*.mp3|Todos los archivos|*.*";
-            openFileDialog.Title = "Seleccionar archivo de audio";
+            OpenFileDialog abrirDialogoArchivo = new OpenFileDialog();
+            abrirDialogoArchivo.Filter = "Archivos de Audio|*.wav;*.mp3|Todos los archivos|*.*";
+            abrirDialogoArchivo.Title = "Seleccionar archivo de audio";
 
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            if (abrirDialogoArchivo.ShowDialog() == DialogResult.OK)
             {
-                LoadFileRequested?.Invoke(this, openFileDialog.FileName);
-                lblFileName.Text = "Archivo: " + System.IO.Path.GetFileName(openFileDialog.FileName);
-                UpdateStatus("Archivo cargado");
+                ArchivoCargadoSolicitado?.Invoke(this, abrirDialogoArchivo.FileName);
+                lblNombreArchivo.Text = "Archivo: " + System.IO.Path.GetFileName(abrirDialogoArchivo.FileName);
+                ActualizarEstado("Archivo cargado");
                 
                 try
                 {
-                    var fileInfo = new System.IO.FileInfo(openFileDialog.FileName);
-                    double estimatedMinutes = fileInfo.Length / (1024.0 * 1024.0);
-                    totalDuration = TimeSpan.FromMinutes(estimatedMinutes);
+                    var informacionArchivo = new System.IO.FileInfo(abrirDialogoArchivo.FileName);
+                    double minutosEstimados = informacionArchivo.Length / (1024.0 * 1024.0);
+                    duracionTotal = TimeSpan.FromMinutes(minutosEstimados);
                 }
                 catch
                 {
-                    totalDuration = TimeSpan.FromMinutes(3);
+                    duracionTotal = TimeSpan.FromMinutes(3);
                 }
             }
         }
 
-        private void btnPlay_Click(object sender, EventArgs e)
+        private void btnReproducir_Click(object sender, EventArgs e)
         {
-            PlayRequested?.Invoke(this, EventArgs.Empty);
-            animationTimer.Start();
-            playbackStartTime = DateTime.Now;
-            UpdateStatus("Reproduciendo");
+            ReproduccionSolicitada?.Invoke(this, EventArgs.Empty);
+            temporizadorAnimacion.Start();
+            tiempoInicioReproduccion = DateTime.Now;
+            ActualizarEstado("Reproduciendo");
         }
 
-        private void btnPause_Click(object sender, EventArgs e)
+        private void btnPausar_Click(object sender, EventArgs e)
         {
-            PauseRequested?.Invoke(this, EventArgs.Empty);
-            animationTimer.Stop();
-            UpdateStatus("Pausado");
+            PausaSolicitada?.Invoke(this, EventArgs.Empty);
+            temporizadorAnimacion.Stop();
+            ActualizarEstado("Pausado");
         }
 
-        private void btnStop_Click(object sender, EventArgs e)
+        private void btnDetener_Click(object sender, EventArgs e)
         {
-            StopRequested?.Invoke(this, EventArgs.Empty);
-            animationTimer.Stop();
-            UpdateStatus("Detenido");
-            lblTime.Text = "00:00 / " + FormatTime(totalDuration);
+            DetencionSolicitada?.Invoke(this, EventArgs.Empty);
+            temporizadorAnimacion.Stop();
+            ActualizarEstado("Detenido");
+            lblTiempo.Text = "00:00 / " + FormatearTiempo(duracionTotal);
             
-            if (visualizationGraphics != null)
+            if (graficosVisualizacion != null)
             {
-                visualizationGraphics.Clear(Color.Black);
-                visualizationPanel.Invalidate();
+                graficosVisualizacion.Clear(Color.Black);
+                panelVisualizacion.Invalidate();
             }
         }
 
-        private void trackBarVolume_Scroll(object sender, EventArgs e)
+        private void barraVolumen_Scroll(object sender, EventArgs e)
         {
-            float volume = trackBarVolume.Value / 100.0f;
-            VolumeChanged?.Invoke(this, volume);
-            lblVolume.Text = "Volumen: " + trackBarVolume.Value + "%";
+            float volumen = barraVolumen.Value / 100.0f;
+            VolumenCambiado?.Invoke(this, volumen);
+            lblVolumen.Text = "Volumen: " + barraVolumen.Value + "%";
         }
 
-        private void cmbVisualizationMode_SelectedIndexChanged(object sender, EventArgs e)
+        private void cmbModoVisualizacion_SelectedIndexChanged(object sender, EventArgs e)
         {
-            switch (cmbVisualizationMode.SelectedIndex)
+            switch (cmbModoVisualizacion.SelectedIndex)
             {
                 case 0:
-                    currentVisualizer = new SpectrumBarsVisualizer(visualizationPanel.Width, visualizationPanel.Height);
+                    visualizadorActual = new VisualizadorBarrasEspectro(panelVisualizacion.Width, panelVisualizacion.Height);
                     break;
                 case 1:
-                    currentVisualizer = new WaveformVisualizer(visualizationPanel.Width, visualizationPanel.Height);
+                    visualizadorActual = new VisualizadorOnda(panelVisualizacion.Width, panelVisualizacion.Height);
                     break;
                 case 2:
-                    currentVisualizer = new ParticleVisualizer(visualizationPanel.Width, visualizationPanel.Height);
+                    visualizadorActual = new VisualizadorParticulas(panelVisualizacion.Width, panelVisualizacion.Height);
                     break;
                 case 3:
-                    currentVisualizer = new GeometricShapesVisualizer(visualizationPanel.Width, visualizationPanel.Height);
+                    visualizadorActual = new VisualizadorFormasGeometricas(panelVisualizacion.Width, panelVisualizacion.Height);
                     break;
                 case 4:
-                    currentVisualizer = new CircularSpectrumVisualizer(visualizationPanel.Width, visualizationPanel.Height);
+                    visualizadorActual = new VisualizadorEspectroCircular(panelVisualizacion.Width, panelVisualizacion.Height);
                     break;
             }
         }
 
-        private void AnimationTimer_Tick(object sender, EventArgs e)
+        private void TemporizadorAnimacion_Tick(object sender, EventArgs e)
         {
-            TimerTicked?.Invoke(this, EventArgs.Empty);
+            TemporizadorTick?.Invoke(this, EventArgs.Empty);
         }
 
-        public void UpdatePlaybackTime()
+        public void ActualizarTiempoReproduccion()
         {
-            TimeSpan elapsed = DateTime.Now - playbackStartTime;
-            lblTime.Text = FormatTime(elapsed) + " / " + FormatTime(totalDuration);
+            TimeSpan transcurrido = DateTime.Now - tiempoInicioReproduccion;
+            lblTiempo.Text = FormatearTiempo(transcurrido) + " / " + FormatearTiempo(duracionTotal);
         }
 
-        public void RenderAudioData(AudioDataEventArgs e)
+        public void RenderizarDatosAudio(DatosAudioEventArgs e)
         {
-            if (currentVisualizer != null && visualizationGraphics != null)
+            if (visualizadorActual != null && graficosVisualizacion != null)
             {
-                currentVisualizer.Render(visualizationGraphics, e.AudioData, e.FrequencyData, e.Volume, 
-                    e.BassBand, e.MidBand, e.TrebleBand, e.BeatIntensity);
-                visualizationPanel.CreateGraphics().DrawImage(visualizationBitmap, 0, 0);
+                visualizadorActual.Renderizar(graficosVisualizacion, e.DatosAudio, e.DatosFrecuencia, e.Volumen, 
+                    e.BandaBajos, e.BandaMedios, e.BandaAltos, e.IntensidadGolpe);
+                panelVisualizacion.CreateGraphics().DrawImage(mapaBitsVisualizacion, 0, 0);
             }
         }
 
-        private void UpdateStatus(string status)
+        private void ActualizarEstado(string estado)
         {
-            lblStatus.Text = "Estado: " + status;
+            lblEstado.Text = "Estado: " + estado;
         }
 
-        private string FormatTime(TimeSpan time)
+        private string FormatearTiempo(TimeSpan tiempo)
         {
-            if (time.TotalHours >= 1)
+            if (tiempo.TotalHours >= 1)
             {
                 return string.Format("{0:00}:{1:00}:{2:00}", 
-                    (int)time.TotalHours, time.Minutes, time.Seconds);
+                    (int)tiempo.TotalHours, tiempo.Minutes, tiempo.Seconds);
             }
             else
             {
-                return string.Format("{0:00}:{1:00}", time.Minutes, time.Seconds);
+                return string.Format("{0:00}:{1:00}", tiempo.Minutes, tiempo.Seconds);
             }
         }
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
-            animationTimer?.Stop();
-            animationTimer?.Dispose();
-            visualizationGraphics?.Dispose();
-            visualizationBitmap?.Dispose();
-            FormClosingRequested?.Invoke(this, e);
+            temporizadorAnimacion?.Stop();
+            temporizadorAnimacion?.Dispose();
+            graficosVisualizacion?.Dispose();
+            mapaBitsVisualizacion?.Dispose();
+            CierreFormularioSolicitado?.Invoke(this, e);
             base.OnFormClosing(e);
         }
     }

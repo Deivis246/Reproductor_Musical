@@ -7,74 +7,74 @@ namespace Quispe_Almache_ReproductorMusical.Controllers
 {
     public class ReproductorController
     {
-        private readonly ReproductorModel _model;
-        private readonly FrmReproductor _view;
+        private readonly ReproductorModel _modelo;
+        private readonly FrmReproductor _vista;
 
-        public ReproductorController(ReproductorModel model, FrmReproductor view)
+        public ReproductorController(ReproductorModel modelo, FrmReproductor vista)
         {
-            _model = model;
-            _view = view;
+            _modelo = modelo;
+            _vista = vista;
 
-            // Subscribe to Model events
-            _model.AudioDataUpdated += Model_AudioDataUpdated;
+            // Suscribirse a eventos del Modelo
+            _modelo.DatosAudioActualizados += Modelo_DatosAudioActualizados;
 
-            // Subscribe to View events
-            _view.LoadFileRequested += View_LoadFileRequested;
-            _view.PlayRequested += View_PlayRequested;
-            _view.PauseRequested += View_PauseRequested;
-            _view.StopRequested += View_StopRequested;
-            _view.VolumeChanged += View_VolumeChanged;
-            _view.TimerTicked += View_TimerTicked;
-            _view.FormClosingRequested += View_FormClosingRequested;
+            // Suscribirse a eventos de la Vista
+            _vista.ArchivoCargadoSolicitado += Vista_ArchivoCargadoSolicitado;
+            _vista.ReproduccionSolicitada += Vista_ReproduccionSolicitada;
+            _vista.PausaSolicitada += Vista_PausaSolicitada;
+            _vista.DetencionSolicitada += Vista_DetencionSolicitada;
+            _vista.VolumenCambiado += Vista_VolumenCambiado;
+            _vista.TemporizadorTick += Vista_TemporizadorTick;
+            _vista.CierreFormularioSolicitado += Vista_CierreFormularioSolicitado;
         }
 
-        public void Run()
+        public void Iniciar()
         {
-            Application.Run(_view);
+            Application.Run(_vista);
         }
 
-        private void View_LoadFileRequested(object sender, string filePath)
+        private void Vista_ArchivoCargadoSolicitado(object sender, string rutaArchivo)
         {
-            _model.LoadFile(filePath);
+            _modelo.CargarArchivo(rutaArchivo);
         }
 
-        private void View_PlayRequested(object sender, EventArgs e)
+        private void Vista_ReproduccionSolicitada(object sender, EventArgs e)
         {
-            _model.Play();
+            _modelo.Reproducir();
         }
 
-        private void View_PauseRequested(object sender, EventArgs e)
+        private void Vista_PausaSolicitada(object sender, EventArgs e)
         {
-            _model.Pause();
+            _modelo.Pausar();
         }
 
-        private void View_StopRequested(object sender, EventArgs e)
+        private void Vista_DetencionSolicitada(object sender, EventArgs e)
         {
-            _model.Stop();
+            _modelo.Detener();
         }
 
-        private void View_VolumeChanged(object sender, float volume)
+        private void Vista_VolumenCambiado(object sender, float volumen)
         {
-            _model.SetVolume(volume);
+            _modelo.EstablecerVolumen(volumen);
         }
 
-        private void View_TimerTicked(object sender, EventArgs e)
+        private void Vista_TemporizadorTick(object sender, EventArgs e)
         {
-            _model.UpdateAnalysis();
-            if (_model.IsPlaying)
+            _modelo.ActualizarAnalisis();
+            if (_modelo.EstaReproduciendo)
             {
-                _view.UpdatePlaybackTime();
+                _vista.ActualizarTiempoReproduccion();
             }
         }
 
-        private void Model_AudioDataUpdated(object sender, AudioDataEventArgs e)
+        private void Modelo_DatosAudioActualizados(object sender, DatosAudioEventArgs e)
         {
-            _view.RenderAudioData(e);
+            _vista.RenderizarDatosAudio(e);
         }
         
-        private void View_FormClosingRequested(object sender, FormClosingEventArgs e)
+        private void Vista_CierreFormularioSolicitado(object sender, FormClosingEventArgs e)
         {
-            _model.Stop();
+            _modelo.Detener();
         }
     }
 }
